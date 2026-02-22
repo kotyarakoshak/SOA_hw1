@@ -1,0 +1,12 @@
+services:
+  marketplace-health-service:
+    build:
+      context: .
+    container_name: marketplace-health-service
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/health')\""]
+      interval: 100s
+      timeout: 3s
+      retries: 5

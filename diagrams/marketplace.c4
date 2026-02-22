@@ -1,0 +1,88 @@
+specification {
+  element actor {
+    style { shape person }
+  }
+
+  element system {
+    style { shape rectangle }
+  }
+
+  element container {
+    style { shape rectangle }
+  }
+
+  element database {
+    style { shape cylinder }
+  }
+
+  element queue {
+    style { shape rectangle }
+  }
+}
+
+model {
+  buyer  = actor "Покупатель" "Просматривает товары и оформляет заказы"
+  seller = actor "Продавец"   "Добавляет товары и управляет заказами"
+
+  marketplace = system "Marketplace" "Онлайн-платформа для покупки и продажи товаров" {
+
+    webApp      = container "Web/Mobile App"          "Интерфейс для пользователей"
+    apiGateway  = container "API Gateway / BFF"       "Точка входа для всех запросов"
+
+    userService          = container "User Service"          "Управление пользователями"
+    catalogService       = container "Catalog Service"       "Управление товарами"
+    feedService          = container "Feed Service"          "Персональная лента"
+    orderService         = container "Order Service"         "Обработка заказов"
+    paymentService       = container "Payment Service"       "Обработка платежей"
+    notificationService  = container "Notification Service"  "Отправка уведомлений"
+
+    messageBroker = queue    "Message Broker" "Передача событий между сервисами"
+    searchEngine  = container "Search Engine" "Поиск товаров"
+
+    userDB    = database "User DB"    "Данные пользователей"
+    catalogDB = database "Catalog DB" "Данные товаров"
+    feedStore = database "Feed Store" "Данные для ленты"
+    orderDB   = database "Order DB"   "Данные заказов"
+    paymentDB = database "Payment DB" "Данные платежей"
+    notifDB   = database "Notif DB"   "Данные уведомлений"
+
+    webApp -> apiGateway "Запросы"
+
+    apiGateway -> userService    "REST"
+    apiGateway -> catalogService "REST"
+    apiGateway -> feedService    "REST"
+    apiGateway -> orderService   "REST"
+    apiGateway -> paymentService "REST"
+
+    userService    -> userDB    "Хранение"
+    catalogService -> catalogDB "Хранение"
+    feedService    -> feedStore "Хранение"
+    orderService   -> orderDB   "Хранение"
+    paymentService -> paymentDB "Хранение"
+    notificationService -> notifDB "Хранение"
+
+    catalogService -> searchEngine "Поиск"
+
+    orderService   -> messageBroker "События заказа"
+    paymentService -> messageBroker "События оплаты"
+    catalogService -> messageBroker "Изменения товара"
+
+    messageBroker -> feedService         "Получение событий"
+    messageBroker -> notificationService "Получение событий"
+  }
+
+  buyer  -> marketplace.webApp "Использует"
+  seller -> marketplace.webApp "Использует"
+}
+
+views {
+  view C1 {
+    title "Marketplace - Landscape"
+    include *
+  }
+
+  view Container {
+    title "Marketplace - Container Diagram"
+    include *
+  }
+}
